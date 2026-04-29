@@ -50,12 +50,30 @@ This project was built using an AI-first approach, leveraging AI tools to accele
 - **ChatGPT**
 - **Antigravity IDE** (Gemini-powered)
 
-### Sample Prompts Used
-- *"Create a Flask POST /orders API that accepts customer details, calculates total bill using a price dictionary, and stores orders in memory."*
-- *"Add filtering support in GET /orders API using query parameters like status, name, and phone."*
-- *"Create a dashboard API that calculates total revenue, total orders, and count of orders by status."*
-- *"Fix issues in Flask API where filtering is not working correctly and simplify the logic."*
-- *"Generate a simple HTML frontend that interacts with Flask APIs using fetch and displays responses."*
+### Key AI Prompts Used During Development
+
+Below are the core prompts used to guide the AI during the development of this project:
+
+#### 1. Backend Setup
+> *"Create a Flask-based backend for a Laundry Order Management System. Requirements: Build a POST /orders API, accept JSON input (customerName, phone, items), use a price dictionary (Shirt, Pants, Saree), calculate total bill automatically, generate a unique orderId, store orders in memory, and return orderId and totalAmount."*
+
+#### 2. Order Status Management
+> *"Extend the Flask app to support order status updates. Requirements: Add PUT /orders/<id>/status endpoint, accept status in request body, allowed statuses: RECEIVED, PROCESSING, READY, DELIVERED, update order by ID, and handle invalid IDs with proper error responses."*
+
+#### 3. Order Filtering
+> *"Update GET /orders API to support filtering. Requirements: Return all orders by default, support query params (status, customerName, phone), implement filtering logic with partial matching for customer name, and keep logic simple and readable."*
+
+#### 4. Dashboard API
+> *"Create a GET /dashboard API. Requirements: Return total orders, total revenue, and count of orders per status using in-memory data, returning a clean JSON response."*
+
+#### 5. Frontend Integration
+> *"Create a simple HTML frontend for the Flask backend. Requirements: Form to create orders, buttons to fetch all orders and dashboard data, use JavaScript fetch API to display responses on the page, and keep the UI minimal with basic CSS."*
+
+#### 6. Code Improvement & Bug Fixing
+> *"Review and improve the Flask application. Requirements: Add input validation for missing fields/invalid values, fix filtering issues, improve code readability, remove redundant logic, and ensure all APIs work correctly."*
+
+#### 7. Estimated Delivery Feature
+> *"Add an estimated delivery date to orders. Requirements: Set delivery date = current date + 2 days, store it in the order object, return it in the API response, and use the Python datetime module."*
 
 ### Where AI Helped
 - Quickly setting up the Flask project structure and routing.
