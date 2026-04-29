@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laundry Management System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .section {
+            background: white;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
+        h2 { margin-top: 0; color: #34495e; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        .flex-row { display: flex; gap: 15px; align-items: flex-end; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { 
+            background-color: #3498db; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #2980b9; }
+        
+        .order-card {
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            background: #fff;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-RECEIVED { background: #e2e8f0; color: #4a5568; }
+        .status-PROCESSING { background: #feebc8; color: #c05621; }
+        .status-READY { background: #c6f6d5; color: #276749; }
+        .status-DELIVERED { background: #bee3f8; color: #2b6cb0; }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .stat-box {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value { font-size: 24px; font-weight: bold; color: #2d3748; }
+        .stat-label { font-size: 12px; color: #718096; text-transform: uppercase; }
+        
+        #orderResponse { margin-top: 15px; padding: 10px; border-radius: 6px; display: none; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Laundry System</h1>
+
+    <!-- Create Order Form -->
+    <div class="section">
+        <h2>Create Order</h2>
+        <form id="orderForm">
+            <div class="flex-row">
+                <div class="form-group" style="flex: 2;">
+                    <label>Customer Name</label>
+                    <input type="text" id="customerName" placeholder="Name" required>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Phone</label>
+                    <input type="text" id="phone" placeholder="Phone Number" required>
+                </div>
+            </div>
+            <div class="flex-row">
+                <div class="form-group" style="flex: 1;">
+                    <label>Item Type</label>
+                    <select id="itemType">
+                        <option value="Shirt">Shirt (₹20)</option>
+                        <option value="Pants">Pants (₹30)</option>
+                        <option value="Saree">Saree (₹50)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Quantity</label>
+                    <input type="number" id="quantity" value="1" min="1" required>
+                </div>
+                <button type="submit">Add Order</button>
+            </div>
+        </form>
+        <div id="orderResponse"></div>
+    </div>
+
+    <!-- Update Status Form -->
+    <div class="section">
+        <h2>Update Order Status</h2>
+        <form id="statusForm">
+            <div class="flex-row">
+                <div class="form-group" style="flex: 1;">
+                    <label>Order ID</label>
+                    <input type="number" id="updateOrderId" placeholder="ID" required>
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label>New Status</label>
+                    <select id="updateStatus">
+                        <option value="RECEIVED">RECEIVED</option>
+                        <option value="PROCESSING">PROCESSING</option>
+                        <option value="READY">READY</option>
+                        <option value="DELIVERED">DELIVERED</option>
+                    </select>
+                </div>
+                <button type="submit">Update Status</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="section">
+        <h2>Dashboard</h2>
+        <button onclick="loadDashboard()">Refresh Stats</button>
+        <div id="dashboardContainer"></div>
+    </div>
+
+    <!-- View Orders -->
+    <div class="section">
+        <h2>All Orders</h2>
+        <button onclick="loadOrders()">Load Orders</button>
+        <div id="ordersContainer" style="margin-top: 15px;"></div>
+    </div>
+
+    <script>
+        const notify = (id, msg, isError = false) => {
+            const el = document.getElementById(id);
+            el.innerText = msg;
+            el.className = isError ? 'error' : 'success';
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
+        };
+
+        // Create Order
+        document.getElementById('orderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                customerName: document.getElementById('customerName').value,
+                phone: document.getElementById('phone').value,
+                items: [{
+                    type: document.getElementById('itemType').value,
+                    quantity: parseInt(document.getElementById('quantity').value)
+                }]
+            };
+
+            const response = await fetch('/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (response.ok) {
+                notify('orderResponse', `Order #${result.orderId} created! Total: ₹${result.totalAmount}. Expected Delivery: ${result.estimatedDeliveryDate}`);
+                document.getElementById('orderForm').reset();
+                loadDashboard();
+            } else {
+                notify('orderResponse', result.error || 'Failed to create order', true);
+            }
+        });
+
+        // Update Status
+        document.getElementById('statusForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const orderId = document.getElementById('updateOrderId').value;
+            const status = document.getElementById('updateStatus').value;
+
+            const response = await fetch(`/orders/${orderId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            const result = await response.json();
+            if (response.ok) {
+                alert(result.message);
+                loadOrders();
+                loadDashboard();
+            } else {
+                alert(result.error);
+            }
+        });
+
+        // Load Orders
+        async function loadOrders() {
+            const response = await fetch('/orders');
+            const orders = await response.json();
+            const container = document.getElementById('ordersContainer');
+            container.innerHTML = orders.length ? '' : '<p>No orders found.</p>';
+            
+            orders.forEach(order => {
+                const card = document.createElement('div');
+                card.className = 'order-card';
+                card.innerHTML = `
+                    <div>
+                        <strong>ID: #${order.orderId}</strong><br>
+                        ${order.customerName}
+                    </div>
+                    <div>
+                        <span class="status-badge status-${order.status}">${order.status}</span><br>
+                        ${order.phone}<br>
+                        <small>📅 Delivery: ${order.estimatedDeliveryDate}</small>
+                    </div>
+                    <div style="text-align: right;">
+                        <strong>₹${order.totalAmount}</strong><br>
+                        ${order.items.map(i => `${i.quantity}x ${i.type}`).join(', ')}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Load Dashboard
+        async function loadDashboard() {
+            const response = await fetch('/dashboard');
+            const data = await response.json();
+            const container = document.getElementById('dashboardContainer');
+            container.innerHTML = `
+                <div class="dashboard-grid">
+                    <div class="stat-box"><div class="stat-value">${data.totalOrders}</div><div class="stat-label">Total Orders</div></div>
+                    <div class="stat-box"><div class="stat-value">₹${data.totalRevenue}</div><div class="stat-label">Revenue</div></div>
+                    <div class="stat-box"><div class="stat-value">${data.statusCounts.RECEIVED}</div><div class="stat-label">Received</div></div>
+                    <div class="stat-box"><div class="stat-value">${data.statusCounts.PROCESSING}</div><div class="stat-label">Processing</div></div>
+                    <div class="stat-box"><div class="stat-value">${data.statusCounts.READY}</div><div class="stat-label">Ready</div></div>
+                    <div class="stat-box"><div class="stat-value">${data.statusCounts.DELIVERED}</div><div class="stat-label">Delivered</div></div>
+                </div>
+            `;
+        }
+
+        // Initial Load
+        loadDashboard();
+    </script>
+</body>
+</html>
