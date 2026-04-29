@@ -1,6 +1,6 @@
 # Laundry Order Management System
 
-This is a simple web-based system designed to help a dry cleaning store manage daily laundry orders efficiently. It handles everything from taking an order and calculating the bill to tracking the status and showing a basic analytics dashboard.  
+This is a lightweight laundry order management system with order tracking, billing, and dashboard insights. Designed to help a dry cleaning store manage daily laundry orders efficiently. It handles everything from taking an order and calculating the bill to tracking the status and showing a basic analytics dashboard.  
 
 The backend is built using Flask, and a lightweight frontend is created using HTML, CSS, and JavaScript.
 
