@@ -23,10 +23,10 @@ const calculateTotal = (items) => {
 
 // Middleware for basic validation of order creation
 const validateOrderData = (req, res, next) => {
-  const { customerName, phone, items } = req.body;
+  const { customerName, phone, address, items } = req.body;
 
-  if (!customerName || !phone || !items) {
-    return res.status(400).json({ error: "Missing required fields: customerName, phone, or items" });
+  if (!customerName || !phone || !address || !items) {
+    return res.status(400).json({ error: "Missing required fields: customerName, phone, address, or items" });
   }
 
   if (!Array.isArray(items) || items.length === 0) {
@@ -51,7 +51,7 @@ const validateOrderData = (req, res, next) => {
 // 1. Create Order (POST /orders)
 router.post('/orders', validateOrderData, async (req, res) => {
   try {
-    const { customerName, phone, items } = req.body;
+    const { customerName, phone, address, items } = req.body;
     
     // Calculate bill automatically
     const totalAmount = calculateTotal(items);
@@ -67,6 +67,7 @@ router.post('/orders', validateOrderData, async (req, res) => {
       orderId,
       customerName,
       phone,
+      address,
       items,
       totalAmount,
       status: 'RECEIVED',
@@ -101,7 +102,8 @@ router.get('/orders', async (req, res) => {
       query.customerName = { $regex: customerName, $options: 'i' };
     }
     if (phone) {
-      query.phone = phone;
+      // Substring search on phone number
+      query.phone = { $regex: phone, $options: 'i' };
     }
 
     const orders = await Order.find(query).sort({ orderId: -1 });
@@ -178,6 +180,31 @@ router.get('/dashboard', async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: `Server error generating dashboard: ${err.message}` });
+  }
+});
+
+// 5. Delete Order (DELETE /orders/:id)
+router.delete('/orders/:id', async (req, res) => {
+  try {
+    const orderIdParam = req.params.id;
+    let order = null;
+    if (!isNaN(orderIdParam)) {
+      order = await Order.findOneAndDelete({ orderId: Number(orderIdParam) });
+    }
+    if (!order && mongoose.Types.ObjectId.isValid(orderIdParam)) {
+      order = await Order.findByIdAndDelete(orderIdParam);
+    }
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.status(200).json({
+      message: "Order deleted successfully",
+      orderId: order.orderId
+    });
+  } catch (err) {
+    res.status(500).json({ error: `Server error deleting order: ${err.message}` });
   }
 });
 

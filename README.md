@@ -94,11 +94,12 @@ The Express backend is configured to statically serve the frontend assets, estab
 
 ## 🌟 Key Features
 
-* 📝 **Create Laundry Orders**: Capture customer name, phone number, select garment types (Shirt, Pants, Saree), and specify quantities.
+* 📝 **Create Laundry Orders**: Capture customer name, phone number, physical address, select garment types (Shirt, Pants, Saree), and specify quantities.
 * 💰 **Live Cost Estimator**: Pre-calculates and displays the estimated total cost dynamically in real-time as users modify orders before final submission.
 * 📊 **Operational Dashboard**: Real-time aggregated statistics tracking total order volume, overall revenue (INR), and order counts grouped by status.
 * 🚦 **Status Lifecycle Workflows**: Transition orders through progressive stages: `RECEIVED` ➔ `PROCESSING` ➔ `READY` ➔ `DELIVERED`.
-* 🔍 **Granular Filters**: Real-time search capability filtering orders dynamically by status tags, customer names (case-insensitive), or phone matches.
+* 🔍 **Granular Filters**: Real-time search capability filtering orders dynamically by status tags, customer names (case-insensitive), or phone matches (substring search).
+* 🗑️ **Order Deletion**: Instantly remove records from the system using the dedicated order deletion action button, which updates all aggregated dashboard metrics automatically.
 * 🎨 **Premium UI/UX Design**: Built with a sleek dark-themed glassmorphism aesthetic, custom Outfit typography, dynamic CSS animations, and full responsiveness across mobile and desktop.
 
 ---
@@ -115,6 +116,7 @@ The Express backend is configured to statically serve the frontend assets, estab
   {
     "customerName": "Alice Vance",
     "phone": "9876543210",
+    "address": "123 Main St, New York, NY",
     "items": [
       {
         "type": "Shirt",
@@ -130,6 +132,7 @@ The Express backend is configured to statically serve the frontend assets, estab
     "orderId": 12,
     "customerName": "Alice Vance",
     "phone": "9876543210",
+    "address": "123 Main St, New York, NY",
     "items": [{ "type": "Shirt", "quantity": 3, "price": 20 }],
     "totalAmount": 60,
     "status": "RECEIVED",
@@ -151,6 +154,7 @@ The Express backend is configured to statically serve the frontend assets, estab
       "orderId": 12,
       "customerName": "Alice Vance",
       "phone": "9876543210",
+      "address": "123 Main St, New York, NY",
       "items": [{ "type": "Shirt", "quantity": 3, "price": 20 }],
       "totalAmount": 60,
       "status": "RECEIVED",
@@ -175,6 +179,17 @@ The Express backend is configured to statically serve the frontend assets, estab
     "orderId": 12,
     "newStatus": "PROCESSING",
     "message": "Order status updated successfully"
+  }
+  ```
+
+#### 4. Delete an Order
+* **Endpoint**: `DELETE /orders/:id`
+* **URL Parameter**: `:id` (Can be the sequential integer `orderId` or the MongoDB standard `_id`)
+* **Success Response (200 OK)**:
+  ```json
+  {
+    "message": "Order deleted successfully",
+    "orderId": 12
   }
   ```
 

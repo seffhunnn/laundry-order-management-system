@@ -27,6 +27,11 @@ const OrderSchema = new mongoose.Schema({
     required: [true, 'Phone number is required'],
     trim: true
   },
+  address: {
+    type: String,
+    required: [true, 'Address is required'],
+    trim: true
+  },
   // Items array: Since 'type' is a reserved Mongoose schema keyword, 
   // we declare it as type: { type: String } so Mongoose knows it's a field named 'type'.
   items: [{

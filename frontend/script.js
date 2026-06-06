@@ -1,6 +1,13 @@
 // API Base Address
-// If served by the server, use window.location.origin, else fallback to localhost:5000 for static preview
-const API_BASE = window.location.origin.startsWith('http') ? window.location.origin : 'http://127.0.0.1:5000';
+// If running on a local dev server (e.g. live-server on port 8080), fallback to backend at port 5000.
+// If served by the backend or in production, use the current origin.
+const API_BASE = (
+  (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') && 
+  window.location.port !== '5000'
+) 
+  ? 'http://127.0.0.1:5000' 
+  : (window.location.origin.startsWith('http') ? window.location.origin : 'http://127.0.0.1:5000');
+
 
 // Pricing Configuration to calculate live cost preview
 const PRICE_LIST = {
@@ -46,12 +53,14 @@ document.getElementById('orderForm').addEventListener('submit', async (e) => {
     
     const customerName = document.getElementById('customerName').value.trim();
     const phone = document.getElementById('phone').value.trim();
+    const address = document.getElementById('address').value.trim();
     const type = document.getElementById('itemType').value;
     const quantity = parseInt(document.getElementById('quantity').value);
 
     const payload = {
         customerName,
         phone,
+        address,
         items: [{ type, quantity }]
     };
 
@@ -174,7 +183,10 @@ async function loadOrders() {
                         <span class="order-id-label">ORDER #${order.orderId}</span>
                         <h3 class="order-customer-name">${order.customerName}</h3>
                     </div>
-                    <span class="order-phone">📞 ${order.phone}</span>
+                    <div class="order-contact-details">
+                        <span class="order-phone">📞 ${order.phone}</span>
+                        <span class="order-address" title="${order.address || ''}">📍 ${order.address || 'N/A'}</span>
+                    </div>
                 </div>
                 <div class="order-card-col">
                     <span class="status-badge status-${order.status}">${order.status}</span>
@@ -188,6 +200,13 @@ async function loadOrders() {
                 <div class="order-card-col order-cost-col">
                     <span class="order-amount">₹${order.totalAmount}</span>
                     <span class="order-items-list" title="${itemsString}">${itemsString}</span>
+                    <button class="btn-delete" onclick="deleteOrder('${order.orderId}')" title="Delete Order">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        Delete
+                    </button>
                 </div>
             `;
             container.appendChild(card);
@@ -201,6 +220,28 @@ async function loadOrders() {
         `;
     }
 }
+
+// Delete Order from client
+window.deleteOrder = async function(orderId) {
+    if (!confirm(`Are you sure you want to delete Order #${orderId}?`)) {
+        return;
+    }
+    try {
+        const response = await fetch(`${API_BASE}/orders/${orderId}`, {
+            method: 'DELETE'
+        });
+        const data = await response.json();
+        if (response.ok) {
+            loadDashboard();
+            loadOrders();
+        } else {
+            alert(`Error: ${data.error || 'Failed to delete order'}`);
+        }
+    } catch (err) {
+        console.error('Error deleting order:', err);
+        alert('Network connection error. Failed to delete order.');
+    }
+};
 
 // 5. Load & Update Dashboard Statistics
 async function loadDashboard() {
